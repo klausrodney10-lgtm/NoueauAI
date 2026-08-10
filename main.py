@@ -64,7 +64,7 @@ def read_file(file):
 # SPLIT DOCUMENT INTO CHUNKS
 # =========================================================
 
-def chunk_text(text, chunk_size=1500):
+def chunk_text(text, chunk_size=1000):
 
     text = text.replace("\x00", " ")
     text = " ".join(text.split())
@@ -423,8 +423,8 @@ with st.sidebar:
     remember_documents = st.slider(
         "📚 Documents to remember",
         0,
-        5,
-        3
+        3,
+        2
     )
 
     recall = st.slider(
@@ -633,11 +633,11 @@ if prompt:
     # -----------------------------------------------------
 
     document_context = (
-        document_context[:12000]
+        document_context[:6000]
     )
 
     memory_context = (
-        memory_context[:5000]
+        memory_context[:2000]
     )
 
 
@@ -670,7 +670,7 @@ RELEVANT MEMORY:
     # -----------------------------------------------------
 
     recent_messages = (
-        st.session_state.messages[-10:]
+        st.session_state.messages[-6:]
     )
 
 
