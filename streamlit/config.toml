@@ -1,0 +1,110 @@
+```toml
+[theme]
+
+# =========================================================
+# NEXA AI — PREMIUM DARK THEME
+# =========================================================
+
+base = "dark"
+
+# ---------------------------------------------------------
+# Main Colors
+# ---------------------------------------------------------
+
+primaryColor = "#00E676"
+
+backgroundColor = "#070A0F"
+
+secondaryBackgroundColor = "#0E141D"
+
+textColor = "#F4F7FA"
+
+borderColor = "#202B38"
+
+
+# ---------------------------------------------------------
+# Links / Interactive Elements
+# ---------------------------------------------------------
+
+linkColor = "#00E676"
+
+linkUnderline = false
+
+
+# ---------------------------------------------------------
+# Code
+# ---------------------------------------------------------
+
+codeBackgroundColor = "#0A1018"
+
+codeTextColor = "#B9F6CA"
+
+
+# ---------------------------------------------------------
+# Tables
+# ---------------------------------------------------------
+
+dataframeBorderColor = "#202B38"
+
+dataframeHeaderBackgroundColor = "#111923"
+
+
+# ---------------------------------------------------------
+# Typography
+# ---------------------------------------------------------
+
+font = "sans serif"
+
+headingFont = "sans serif"
+
+codeFont = "monospace"
+
+baseFontSize = 16
+
+baseFontWeight = 400
+
+codeFontSize = "0.9rem"
+
+codeFontWeight = 400
+
+
+# ---------------------------------------------------------
+# UI Shapes
+# ---------------------------------------------------------
+
+baseRadius = "large"
+
+buttonRadius = "large"
+
+showWidgetBorder = true
+
+showSidebarBorder = true
+
+
+# ---------------------------------------------------------
+# Metrics
+# ---------------------------------------------------------
+
+metricValueFontSize = "2rem"
+
+metricValueFontWeight = 700
+
+
+# ---------------------------------------------------------
+# NEXA AI PALETTE
+# ---------------------------------------------------------
+
+# Emerald — AI / intelligence / primary action
+# Gold — premium / important information
+# Blue — analysis / information
+# Orange — warnings / attention
+# Purple — creative / advanced
+
+chartCategoricalColors = [
+    "#00E676",
+    "#FFD740",
+    "#29B6F6",
+    "#FF7043",
+    "#B388FF"
+]
+```
