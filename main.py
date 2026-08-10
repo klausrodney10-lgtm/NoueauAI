@@ -2,6 +2,7 @@ import streamlit as st
 import os
 import hashlib
 import chromadb
+from tavily import TavilyClient
 from dotenv import load_dotenv
 from openai import OpenAI
 from pypdf import PdfReader
@@ -272,6 +273,38 @@ client = OpenAI(
     api_key=API_KEY
 )
 
+TAVILY_KEY = os.getenv("TAVILY_API_KEY")
+
+if TAVILY_KEY:
+    tavily = TavilyClient(api_key=TAVILY_KEY)
+else:
+    tavily = None
+
+def search_web(question):
+
+    if tavily is None:
+        return ""
+
+    try:
+        results = tavily.search(
+            query=question,
+            max_results=3
+        )
+
+        web_context = ""
+
+        for result in results.get("results", []):
+            web_context += f"""
+Title: {result.get("title", "")}
+URL: {result.get("url", "")}
+Information: {result.get("content", "")}
+
+"""
+
+        return web_context[:4000]
+
+    except Exception as e:
+        return f"Web search error: {e}"
 
 # =========================================================
 # NEXA SYSTEM PROMPT
@@ -281,8 +314,13 @@ SYSTEM_PROMPT = """
 You are Nexa AI, a helpful, intelligent and friendly
 general-purpose AI assistant.
 
-You help users with:
+LANGUAGE:
+Always answer in the same language as the user.
+If the user writes in French, answer in French.
+If the user writes in English, answer in English.
+If the user writes in Spanish, answer in Spanish.
 
+You can help with:
 - General questions
 - Studying
 - Writing
@@ -290,34 +328,76 @@ You help users with:
 - Brainstorming
 - Explaining concepts
 - Document analysis
-- Summarization
+- Current information
+- Sports and football
+
+WEB SEARCH RULES:
+
+When CURRENT or RECENT information is needed,
+use the CURRENT WEB INFORMATION provided to you.
+
+This includes:
+- Current football results
+- Recent football matches
+- Champions League results
+- World Cup information
+- League standings
+- Recent news
+- Current prices
+- Recent events
+
+IMPORTANT:
+
+If CURRENT WEB INFORMATION is provided, use it
+to answer the user's question.
+
+Do NOT say:
+"I don't have access to current information."
+
+Do NOT tell the user to search the Internet themselves
+when useful web information has already been provided.
+
+Use the web information to create a direct answer.
+
+If the web information does not contain the answer,
+clearly say that the available web sources did not
+provide enough information.
 
 DOCUMENT RULES:
 
-When relevant information is provided from the
-Nexa document database, use it as your main source.
+When relevant document information is provided,
+use it to answer questions about uploaded documents.
 
-Do not invent information that is not supported
-by the provided documents.
+Do not invent information from documents.
 
-If the user asks a question specifically about an
-uploaded document and the answer cannot be found
-in the document database, say:
+If the user asks about an uploaded document and the
+answer cannot be found in the provided document
+information, say:
 
 "I don't have enough information in my document
 database to answer that."
 
-You can summarize, explain, compare and analyze
-information from uploaded documents.
+MEMORY:
 
-Give clear and useful answers.
+Use relevant information from the provided memory
+when it helps answer the user's question.
 
-Adapt your explanation to the user's level.
+Do not reveal private memory unless it is relevant
+to the user's request.
+
+GENERAL BEHAVIOR:
+
+Give direct, clear and useful answers.
+
+For factual questions, prioritize reliable and recent
+information.
+
+When using web information, mention the source when
+appropriate.
 
 Use examples when helpful.
 
-Use emojis naturally when appropriate,
-but do not overuse them.
+Use emojis naturally, but don't overuse them.
 """
 
 
@@ -423,8 +503,8 @@ with st.sidebar:
     remember_documents = st.slider(
         "📚 Documents to remember",
         0,
-        3,
-        2
+        2,
+        1
     )
 
     recall = st.slider(
@@ -591,6 +671,10 @@ if prompt:
         recall
     )
 
+    web_context = ""
+
+    if web_search:
+        web_context = search_web(prompt)
 
     # -----------------------------------------------------
     # BUILD DOCUMENT CONTEXT
@@ -633,11 +717,11 @@ if prompt:
     # -----------------------------------------------------
 
     document_context = (
-        document_context[:6000]
+        document_context[:4000]
     )
 
     memory_context = (
-        memory_context[:2000]
+        memory_context[:1000]
     )
 
 
@@ -662,6 +746,10 @@ RELEVANT DOCUMENT INFORMATION:
 RELEVANT MEMORY:
 
 {memory_context}
+
+CURRENT WEB INFORMATION:
+
+{web_context if web_context else "No web search was performed."}
 """
 
 
@@ -670,7 +758,7 @@ RELEVANT MEMORY:
     # -----------------------------------------------------
 
     recent_messages = (
-        st.session_state.messages[-6:]
+        st.session_state.messages[-4:]
     )
 
 
@@ -707,9 +795,15 @@ RELEVANT MEMORY:
 
             try:
 
+                print("Document characters:", len(document_context))
+                print("Memory characters:", len(memory_context))
+                print("Recent messages:", len(recent_messages))
+                print("Total message characters:",
+                      sum(len(str(m["content"])) for m in messages))
+
                 response = (
                     client.chat.completions.create(
-                        model="groq/compound",
+                        model="llama-3.3-70b-versatile",
                         messages=messages,
                         temperature=creativity
                     )
