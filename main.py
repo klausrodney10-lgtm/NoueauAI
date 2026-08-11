@@ -291,6 +291,39 @@ def search_web(question):
             max_results=3
         )
 
+        def search_web(question):
+
+            if tavily is None:
+                return ""
+
+            try:
+
+                results = tavily.search(
+                    query=question,
+                    max_results=5,
+                    search_depth="advanced"
+                )
+
+                web_context = ""
+
+                for result in results.get("results", []):
+                    web_context += f"""
+        TITLE: {result.get("title", "")}
+
+        URL: {result.get("url", "")}
+
+        CONTENT:
+        {result.get("content", "")}
+
+        -------------------------
+        """
+
+                return web_context[:7000]
+
+            except Exception as e:
+
+                return f"Web search error: {e}"
+
         web_context = ""
 
         for result in results.get("results", []):
@@ -333,18 +366,43 @@ You can help with:
 
 WEB SEARCH RULES:
 
-When CURRENT or RECENT information is needed,
-use the CURRENT WEB INFORMATION provided to you.
+The web search results are the PRIMARY source for
+CURRENT and RECENT information.
 
-This includes:
-- Current football results
-- Recent football matches
-- Champions League results
-- World Cup information
-- League standings
-- Recent news
-- Current prices
-- Recent events
+When the user asks about:
+- today's information
+- this year
+- a recent match
+- current football results
+- current standings
+- current competitions
+- recent news
+- current prices
+- current events
+
+you MUST use the provided CURRENT WEB INFORMATION.
+
+Do NOT use old knowledge to fill missing information.
+
+Do NOT mix information from different years or seasons.
+
+If the user asks about 2026, do not answer with
+results from 2021, 2022, 2023, 2024 or 2025 unless
+the user specifically asks about those years.
+
+If the web results do not contain enough information,
+say:
+
+"Je n'ai pas trouvé suffisamment d'informations
+récentes dans les sources disponibles."
+
+Do NOT invent or guess missing results.
+
+Do NOT recommend that the user search the Internet
+themselves if web results were already provided.
+
+When possible, mention the source and date of the
+information.
 
 IMPORTANT:
 
@@ -750,6 +808,25 @@ RELEVANT MEMORY:
 CURRENT WEB INFORMATION:
 
 {web_context if web_context else "No web search was performed."}
+
+CURRENT WEB INFORMATION:
+{web_context if web_context else "No web information available."}
+
+RELEVANT DOCUMENT INFORMATION:
+{document_context}
+
+RELEVANT MEMORY:
+{memory_context}
+
+User name:
+{name if name else "Not provided"}
+
+AI mode:
+{mode}
+
+Response style:
+{response_style}
+
 """
 
 
